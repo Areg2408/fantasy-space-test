@@ -1,0 +1,8 @@
+-- AlterTable
+ALTER TABLE `Course` ADD COLUMN `category` VARCHAR(191) NULL,
+    ADD COLUMN `duration` INTEGER NULL,
+    ADD COLUMN `imageUrl` VARCHAR(191) NULL,
+    ADD COLUMN `language` VARCHAR(191) NULL,
+    ADD COLUMN `level` VARCHAR(191) NOT NULL DEFAULT 'beginner',
+    ADD COLUMN `price` DOUBLE NULL,
+    ADD COLUMN `published` BOOLEAN NOT NULL DEFAULT false;

@@ -7,17 +7,66 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id        Int     @id @default(autoincrement())
-  email     String  @unique
-  password  String
-  fullName  String
-  role      Role
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
 enum Role {
   student
   instructor
+}
+
+enum DifficultyLevel {
+  beginner
+  intermediate
+  advanced
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
+  password  String
+  fullName  String
+  role      Role
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  // Relations
+  courses     Course[]     @relation("InstructorCourses") // courses taught (instructor)
+  enrollments Enrollment[] @relation("StudentEnrollments") // courses enrolled (student)
+}
+
+model Course {
+  id          Int       @id @default(autoincrement())
+  title       String
+  description String
+  imageUrl    String?
+  category    String?
+  level String @default("beginner") // or another default valueƒ
+  duration    Int?     // in minutes
+  price       Float?
+  language    String?
+  published   Boolean  @default(false)
+
+  instructor   User      @relation("InstructorCourses", fields: [instructorId], references: [id])
+  instructorId Int
+  lessons      Lesson[]
+  enrollments  Enrollment[]
+  createdAt    DateTime  @default(now())
+}
+
+model Lesson {
+  id        Int      @id @default(autoincrement())
+  title     String
+  content   String
+  course    Course   @relation(fields: [courseId], references: [id])
+  courseId  Int
+  createdAt DateTime @default(now())
+}
+
+model Enrollment {
+  id         Int      @id @default(autoincrement())
+  student    User     @relation("StudentEnrollments", fields: [studentId], references: [id])
+  studentId  Int
+  course     Course   @relation(fields: [courseId], references: [id])
+  courseId   Int
+  createdAt  DateTime @default(now())
+
+  @@unique([studentId, courseId])
 }
