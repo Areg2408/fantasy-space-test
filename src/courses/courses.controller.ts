@@ -7,6 +7,7 @@ import {
   UseGuards,
   Req,
   ParseIntPipe,
+  UseInterceptors,
 } from '@nestjs/common';
 import { CoursesService } from './courses.service';
 import { Role } from '@prisma/client';
@@ -15,6 +16,7 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { CreateLessonDto } from './dto/create-lesson.dto';
+import { CacheInterceptor, CacheKey, CacheTTL } from '@nestjs/cache-manager';
 
 @Controller('courses')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -45,6 +47,9 @@ export class CoursesController {
 
   @Get(':id/lessons')
   @Roles(Role.student)
+  @UseInterceptors(CacheInterceptor)
+  @CacheKey('course_lessons') // Optional, use static key or customize
+  @CacheTTL(60) // Optional, cache for 60 seconds
   getLessons(@Param('id', ParseIntPipe) id: number, @Req() req) {
     return this.coursesService.getLessonsIfEnrolled(req.user.userId, id);
   }
