@@ -19,54 +19,69 @@ enum DifficultyLevel {
 }
 
 model User {
-  id        Int       @id @default(autoincrement())
-  email     String    @unique
-  password  String
-  fullName  String
-  role      Role
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id       Int    @id @default(autoincrement())
+  email    String @unique
+  password String
+  fullName String
+  role     Role
 
   // Relations
-  courses     Course[]     @relation("InstructorCourses") // courses taught (instructor)
-  enrollments Enrollment[] @relation("StudentEnrollments") // courses enrolled (student)
+  courses     Course[]     @relation("InstructorCourses")
+  enrollments Enrollment[] @relation("StudentEnrollments")
+  questions   Question[] // 👈 Add this line
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @default(now())
 }
 
 model Course {
-  id          Int       @id @default(autoincrement())
+  id          Int     @id @default(autoincrement())
   title       String
   description String
   imageUrl    String?
   category    String?
-  level String @default("beginner") // or another default valueƒ
-  duration    Int?     // in minutes
+  level       String  @default("beginner") // or another default valueƒ
+  duration    Int? // in minutes
   price       Float?
   language    String?
-  published   Boolean  @default(false)
+  published   Boolean @default(false)
 
-  instructor   User      @relation("InstructorCourses", fields: [instructorId], references: [id])
+  instructor   User         @relation("InstructorCourses", fields: [instructorId], references: [id])
   instructorId Int
   lessons      Lesson[]
   enrollments  Enrollment[]
-  createdAt    DateTime  @default(now())
+  createdAt    DateTime     @default(now())
 }
 
 model Lesson {
-  id        Int      @id @default(autoincrement())
+  id        Int        @id @default(autoincrement())
   title     String
   content   String
-  course    Course   @relation(fields: [courseId], references: [id])
+  course    Course     @relation(fields: [courseId], references: [id])
   courseId  Int
-  createdAt DateTime @default(now())
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @default(now()) // ✅ This is what you need
+  questions Question[]
 }
 
 model Enrollment {
-  id         Int      @id @default(autoincrement())
-  student    User     @relation("StudentEnrollments", fields: [studentId], references: [id])
-  studentId  Int
-  course     Course   @relation(fields: [courseId], references: [id])
-  courseId   Int
-  createdAt  DateTime @default(now())
+  id        Int      @id @default(autoincrement())
+  student   User     @relation("StudentEnrollments", fields: [studentId], references: [id])
+  studentId Int
+  course    Course   @relation(fields: [courseId], references: [id])
+  courseId  Int
+  createdAt DateTime @default(now())
 
   @@unique([studentId, courseId])
+}
+
+model Question {
+  id        Int      @id @default(autoincrement())
+  content   String
+  answer    String? // null if unanswered
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  lesson    Lesson   @relation(fields: [lessonId], references: [id])
+  lessonId  Int
+  student   User     @relation(fields: [studentId], references: [id])
+  studentId Int
 }
